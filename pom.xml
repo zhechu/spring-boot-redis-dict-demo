@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.wise</groupId>
-	<artifactId>spring-boot-hello</artifactId>
+	<artifactId>spring-boot-redis-dict-demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
@@ -26,6 +26,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 		</dependency>
+		
+		<!-- 开发注解小工具 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		
 	</dependencies>
 
 	<dependencyManagement>
@@ -67,8 +74,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.2</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
