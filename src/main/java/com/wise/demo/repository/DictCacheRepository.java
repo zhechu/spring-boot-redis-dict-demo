@@ -85,36 +85,38 @@ public class DictCacheRepository {
 
 		// 加锁，分布式下需使用分布式锁保证数据一致性
 		lock.lock();
+		
+		try {
+			// 先删除旧的缓存，使用 pipeline 提搞效率
+			redisTemplate.executePipelined(new RedisCallback<Boolean>() {
 
-		// 先删除旧的缓存，使用 pipeline 提搞效率
-		redisTemplate.executePipelined(new RedisCallback<Boolean>() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-				RedisSerializer<String> keySerializer = (RedisSerializer<String>) redisTemplate.getKeySerializer();
+				@SuppressWarnings("unchecked")
+				@Override
+				public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+					RedisSerializer<String> keySerializer = (RedisSerializer<String>) redisTemplate.getKeySerializer();
+					
+					connection.del(keySerializer.serialize(DICT_DETAIL_KEY));
+					connection.del(keySerializer.serialize(DICT_LIST_KEY));
+					
+					// 此处返回什么没有意义
+					return null;
+				}
 				
-				connection.del(keySerializer.serialize(DICT_DETAIL_KEY));
-				connection.del(keySerializer.serialize(DICT_LIST_KEY));
-				
-				// 此处返回什么没有意义
-				return null;
-			}
+			});
 			
-		});
-		
-		// 先删除旧的缓存
-//		redisTemplate.delete(DICT_DETAIL_KEY);
-//		redisTemplate.delete(DICT_LIST_KEY);
-		
-		// 缓存 detail，底层调用的是 redis 的 hmset 命令
-		dictOpsForHash.putAll(DICT_DETAIL_KEY, dictMap);
-		
-		// 缓存 list，底层调用的是 redis 的 hmset 命令
-		dictParentOpsForHash.putAll(DICT_LIST_KEY, dictParentMap);
-
-		// 解锁
-		lock.unlock();
+			// 先删除旧的缓存
+//			redisTemplate.delete(DICT_DETAIL_KEY);
+//			redisTemplate.delete(DICT_LIST_KEY);
+			
+			// 缓存 detail，底层调用的是 redis 的 hmset 命令
+			dictOpsForHash.putAll(DICT_DETAIL_KEY, dictMap);
+			
+			// 缓存 list，底层调用的是 redis 的 hmset 命令
+			dictParentOpsForHash.putAll(DICT_LIST_KEY, dictParentMap);
+		} finally {
+			// 解锁
+			lock.unlock();
+		}
 	}
 
 	/**
